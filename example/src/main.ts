@@ -390,4 +390,5 @@ function startKanban() {
 }
 
 // Bootstrap
-document.addEventListener('DOMContentLoaded', startKanban);
+
+startKanban();
