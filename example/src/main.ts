@@ -384,7 +384,7 @@ function startKanban() {
   // Start the app
   createApp({
     root: '#app',
-    state: store.getState(),
+    state: store,
     render: renderApp,
   });
 }
