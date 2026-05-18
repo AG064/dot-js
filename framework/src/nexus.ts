@@ -253,8 +253,14 @@ export function createApp(config: AppConfig) {
   if (!rootEl) { console.error('Nexus: Root element not found:', config.root); return; }
 
   const listeners: Set<(state: any) => void> = new Set();
+  
+  // config.state can be a Store instance or a plain state object
+  const initialState = (config.state as any).getState
+    ? (config.state as any).getState()
+    : { ...config.state as object };
+  
   const store = {
-    state: { ...config.state },
+    state: initialState,
     setState: (newState: any) => {
       store.state = { ...store.state, ...newState };
       listeners.forEach(fn => fn(store.state));

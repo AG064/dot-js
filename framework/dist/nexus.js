@@ -211,8 +211,12 @@ export function createApp(config) {
         return;
     }
     const listeners = new Set();
+    // config.state can be a Store instance or a plain state object
+    const initialState = config.state.getState
+        ? config.state.getState()
+        : { ...config.state };
     const store = {
-        state: { ...config.state },
+        state: initialState,
         setState: (newState) => {
             store.state = { ...store.state, ...newState };
             listeners.forEach(fn => fn(store.state));
