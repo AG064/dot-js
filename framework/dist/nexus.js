@@ -184,15 +184,18 @@ export function createDOM(element) {
         if (key.startsWith('data-') && val != null)
             el.setAttribute(key, String(val));
     });
-    const skip = ['className', 'id', 'style', 'on', 'children', 'key', ...Object.keys(props).filter(k => k.startsWith('data-'))];
-    Object.entries(props).forEach(([key, val]) => {
-        if (!skip.includes(key) && val != null) {
-            if (key === 'value' && el.value !== undefined)
-                el.value = String(val);
-            else if (key !== 'children' && key !== 'key')
-                el.setAttribute(key, String(val));
-        }
-    });
+    // Only set attributes if el is a valid Element node
+    if (el.nodeType === 1) {
+        const skip = ['className', 'id', 'style', 'on', 'children', 'key', ...Object.keys(props).filter(k => k.startsWith('data-'))];
+        Object.entries(props).forEach(([key, val]) => {
+            if (!skip.includes(key) && val != null && typeof key === 'string') {
+                if (key === 'value' && el.value !== undefined)
+                    el.value = String(val);
+                else if (key !== 'children' && key !== 'key')
+                    el.setAttribute(key, String(val));
+            }
+        });
+    }
     children.forEach((child) => {
         if (child != null)
             el.appendChild(createDOM(child));
