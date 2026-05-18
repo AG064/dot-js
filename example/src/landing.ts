@@ -18,7 +18,7 @@ import {
 } from '../framework/src/nexus';
 
 // ============================================================================
-// STORE — Simple state
+// STORE
 // ============================================================================
 
 const store = createStore({
@@ -47,7 +47,7 @@ function renderNavbar() {
 }
 
 function renderHero() {
-  return section([css({ padding: '80px 20px', background: '#f9f9f9', textAlign: 'center' })], [
+  return section([
     center([
       h1('Nexus.js', css({ fontSize: '48px', marginBottom: '16px' })),
       p('A lightweight frontend framework for building web apps', css({ fontSize: '18px', color: '#666', marginBottom: '32px' })),
@@ -56,24 +56,24 @@ function renderHero() {
         button('Learn More', css({ background: '#666' })),
       ], 16),
     ], 800),
-  ]);
+  ], css({ padding: '80px 20px', background: '#f9f9f9', textAlign: 'center' }));
 }
 
 function renderFeatures() {
-  return section([id('features'), css({ padding: '60px 20px' })], [
+  return section([
     center([
       h2('Features', css({ textAlign: 'center', marginBottom: '40px' })),
       grid([
-        div([h3('Fast'), p('Minimal overhead, maximum speed')], css({ padding: '20px' })),
-        div([h3('Simple'), p('Intuitive API anyone can learn')], css({ padding: '20px' })),
-        div([h3('Lightweight'), p('Under 5KB, no dependencies')], css({ padding: '20px' })),
+        div([h3('Fast'), p('Minimal overhead, maximum speed')], css({ padding: '20px', background: '#fff' })),
+        div([h3('Simple'), p('Intuitive API anyone can learn')], css({ padding: '20px', background: '#fff' })),
+        div([h3('Lightweight'), p('Under 5KB, no dependencies')], css({ padding: '20px', background: '#fff' })),
       ], 3, 20),
     ], 800),
-  ]);
+  ], css({ padding: '60px 20px' }));
 }
 
 function renderPricing() {
-  return section([id('pricing'), css({ padding: '60px 20px', background: '#f9f9f9' })], [
+  return section([
     center([
       h2('Pricing', css({ textAlign: 'center', marginBottom: '40px' })),
       flex([
@@ -95,38 +95,40 @@ function renderPricing() {
         ], css({ padding: '24px', background: '#fff', borderRadius: '8px', minWidth: '200px' })),
       ], 'row', 24, 'stretch'),
     ], 800),
-  ]);
+  ], css({ padding: '60px 20px', background: '#f9f9f9' }));
 }
 
 function renderContact() {
-  return section([css({ padding: '60px 20px' })], [
+  return section([
     center([
       h2('Contact Us', css({ textAlign: 'center', marginBottom: '32px' })),
       div([
         form([
-          div([css({ marginBottom: '16px' })], [
+          div([
             span('Name', css({ display: 'block', marginBottom: '4px', fontWeight: '500' })),
             input({ placeholder: 'Your name' }),
-          ]),
-          div([css({ marginBottom: '16px' })], [
+          ], css({ marginBottom: '16px' })),
+          div([
             span('Email', css({ display: 'block', marginBottom: '4px', fontWeight: '500' })),
             input({ placeholder: 'you@example.com' }),
-          ]),
-          div([css({ marginBottom: '16px' })], [
+          ], css({ marginBottom: '16px' })),
+          div([
             span('Message', css({ display: 'block', marginBottom: '4px', fontWeight: '500' })),
             textarea({ placeholder: 'Your message' }),
-          ]),
+          ], css({ marginBottom: '16px' })),
           button('Send', { type: 'submit' }),
         ], css({ maxWidth: '400px', margin: '0 auto' })),
       ], css({ background: '#fff', padding: '32px', borderRadius: '8px' })),
     ], 600),
-  ]);
+  ], css({ padding: '60px 20px' }));
 }
 
 function renderFooter() {
-  return footer([css({ padding: '32px 20px', background: '#333', color: '#fff', textAlign: 'center' })], [
-    p('© 2026 Nexus.js. All rights reserved.'),
-  ]);
+  return footer([
+    center([
+      p('© 2026 Nexus.js. All rights reserved.'),
+    ], 800),
+  ], css({ padding: '32px 20px', background: '#333', color: '#fff', textAlign: 'center' }));
 }
 
 function renderApp() {
@@ -147,8 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('App element not found');
     return;
   }
-  console.log('Rendering app...');
   const node = createDOM(renderApp());
   root.appendChild(node);
-  console.log('App rendered');
 });
