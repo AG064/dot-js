@@ -9,16 +9,16 @@
 
 import {
   // Elements (shortcuts)
-  div, h1, h2, p, button, a, img, nav,
+  div, h1, h2, p, button, a, img, nav, span, input, textarea, label, footer,
   // Attributes
-  cls, css, id, on, href, placeholder,
+  cls, css, id, on, href, ph as placeholder,
   // Layout
   row, column, center, grid,
   // Patterns
   card, navbar, alert,
   // App
   createApp,
-} from './agx';
+} from '../../framework/src/nexus';
 
 // Landing page example
 const landingPage = () => {
@@ -27,7 +27,7 @@ const landingPage = () => {
   return createApp({
     root: '#app',
     state,
-    render: (s) => center([
+    render: (s: any) => center([
       // Navbar
       navbar('MyBrand', [
         { label: 'Home', href: '#' },
@@ -82,7 +82,7 @@ const todoApp = () => {
       ], 12),
 
       // Todo list
-      div(s.todos.map((todo, i) => row([
+      div(s.todos.map((todo: any, i: any) => row([
         span(`${i + 1}. ${todo}`),
         button('×', { on: { click: () => {} }, className: 'btn-delete' }),
       ], 12)), css({ marginTop: '24px' })),
@@ -124,7 +124,7 @@ const contactForm = () => {
             ], cls('form-field')),
 
             button('Send Message', { type: 'submit', className: 'btn-primary' }),
-          ], { on: { submit: (e) => e.preventDefault() } }),
+          ], { on: { submit: (e: any) => e.preventDefault() } }),
     ], 20),
   });
 };
@@ -143,12 +143,12 @@ const dashboard = () => {
   return createApp({
     root: '#app',
     state: { stats },
-    render: (s) => column([
+    render: (s: any) => column([
       h1('Dashboard'),
-      grid(s.stats.map(stat => div([
+      grid(s.stats.map((stat: any) => div([
         span(stat.label, css({ color: '#666', fontSize: '14px' })),
         span(stat.value, css({ fontSize: '32px', fontWeight: 'bold' })),
-      ], css({ padding: '24px', background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }))), 3, 20)),
+      ], css({ padding: '24px', background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }))), 3, 20),
     ], 24),
   });
 };
@@ -163,7 +163,7 @@ const modalExample = () => {
   return createApp({
     root: '#app',
     state,
-    render: (s) => column([
+    render: (s: any) => column([
       button('Open Modal', {
         on: { click: () => {} },
         className: 'btn-primary',
@@ -185,7 +185,7 @@ const modalExample = () => {
           background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         },
-        on: { click: (e) => {
+        on: { click: (e: any) => {
           if ((e.target as HTMLElement).classList.contains('modal-overlay')) {}
         }},
       }) : null,

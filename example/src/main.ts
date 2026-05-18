@@ -1,6 +1,6 @@
 import {
   // Elements
-  div, h1, h2, span, button, input, textarea, select, option,
+  div, h1, h2, p, span, button, input, textarea, select, option,
   ul, li, img, br, hr,
   nav, header, footer, main, section, article, aside,
   form, label, fieldset, legend,
@@ -21,7 +21,7 @@ import {
   createLazyContainer, LazyContainer,
   // Patterns
   card, modal, navbar, alert, spinner,
-} from '../framework/src/nexus';
+} from '../../framework/src/nexus';
 
 // ============================================================================
 // KANBAN BOARD — Uses ALL Nexus.js features
@@ -86,7 +86,7 @@ function startKanban() {
   }
 
   // Persist to localStorage on changes
-  store.subscribe((state) => {
+  store.subscribe((state: AppState) => {
     localStorage.setItem('nexus-kanban-state', JSON.stringify(state));
   });
 
@@ -210,7 +210,7 @@ function startKanban() {
               e.stopPropagation();
               const state = store.getState();
               store.setState({
-                tasks: state.tasks.filter(t => t.id !== task.id),
+                tasks: state.tasks.filter((t: Task) => t.id !== task.id),
               });
             },
           },

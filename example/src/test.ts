@@ -1,5 +1,5 @@
 // Minimal test to check if framework works
-import { div, h1, p, createDOM } from '../framework/src/nexus';
+import { div, h1, p, createDOM } from '../../framework/src/nexus';
 
 function test() {
   const element = div([
@@ -9,7 +9,8 @@ function test() {
   console.log('Element:', element);
   const node = createDOM(element);
   console.log('Node:', node);
-  document.getElementById('app').appendChild(node);
+  const app = document.getElementById('app');
+  if (app) app.appendChild(node);
 }
 
 test();

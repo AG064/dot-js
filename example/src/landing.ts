@@ -15,7 +15,7 @@ import {
   cls, css, id, on, onMulti, href,
   row, column, center, grid, flex, full,
   createStore, createDOM,
-} from '../framework/src/nexus';
+} from '../../framework/src/nexus';
 
 // ============================================================================
 // STORE

@@ -20,14 +20,93 @@
 type Attrs = Record<string, any>;
 type Styles = Record<string, string | number>;
 type EventHandler = (event: Event) => void;
-type ChildItem = NexusElement | string | number | null | undefined;
-type Children = ChildItem | ChildItem[];
+type Children = any;
 
 export interface NexusElement {
   type: string;
   props: Record<string, any>;
   children: (NexusElement | string | number)[];
   key?: string;
+}
+
+function isNexusElement(value: any): value is NexusElement {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value) && typeof value.type === 'string');
+}
+
+function isPlainObject(value: any): value is Record<string, any> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value) && !isNexusElement(value) && !(value instanceof Node));
+}
+
+function isAttrsObject(value: any): boolean {
+  if (!isPlainObject(value)) return false;
+  const keys = Object.keys(value);
+  if (keys.length === 0) return false;
+  return keys.some((key) =>
+    key === 'className' ||
+    key === 'style' ||
+    key === 'id' ||
+    key === 'on' ||
+    key === 'href' ||
+    key === 'target' ||
+    key === 'rel' ||
+    key === 'src' ||
+    key === 'alt' ||
+    key === 'title' ||
+    key === 'placeholder' ||
+    key === 'value' ||
+    key === 'type' ||
+    key === 'name' ||
+    key === 'checked' ||
+    key === 'disabled' ||
+    key === 'required' ||
+    key === 'autofocus' ||
+    key === 'readonly' ||
+    key === 'readOnly' ||
+    key === 'rows' ||
+    key === 'cols' ||
+    key.startsWith('data-') ||
+    key.startsWith('aria-')
+  );
+}
+
+function isAttrsArray(value: any): boolean {
+  return Array.isArray(value) && value.length > 0 && value.every((item) => isAttrsObject(item));
+}
+
+function mergeAttrs(...sources: any[]): Attrs {
+  const result: Attrs = {};
+  for (const source of sources) {
+    if (!source) continue;
+    if (Array.isArray(source)) {
+      for (const item of source) {
+        Object.assign(result, mergeAttrs(item));
+      }
+      continue;
+    }
+    if (isAttrsObject(source)) {
+      Object.assign(result, source);
+    }
+  }
+  return result;
+}
+
+function normalizeElementArgs(contentOrAttrs?: any, attrsOrContent?: any): { content: any; attrs: Attrs } {
+  if (attrsOrContent === undefined) {
+    if (isAttrsObject(contentOrAttrs) || isAttrsArray(contentOrAttrs)) {
+      return { content: undefined, attrs: mergeAttrs(contentOrAttrs) };
+    }
+    return { content: contentOrAttrs, attrs: {} };
+  }
+
+  if (isAttrsObject(contentOrAttrs) || isAttrsArray(contentOrAttrs)) {
+    return { content: attrsOrContent, attrs: mergeAttrs(contentOrAttrs) };
+  }
+
+  if (isAttrsObject(attrsOrContent) || isAttrsArray(attrsOrContent)) {
+    return { content: contentOrAttrs, attrs: mergeAttrs(attrsOrContent) };
+  }
+
+  return { content: contentOrAttrs, attrs: mergeAttrs(attrsOrContent) };
 }
 
 // ============================================================================
@@ -60,63 +139,65 @@ function flattenChildren(children: any[]): (NexusElement | string | number)[] {
 // ELEMENT FUNCTIONS (PRIMARY API)
 // ============================================================================
 
-function el(tag: string, content?: Children, attrs?: Attrs): NexusElement {
-  if (content === undefined) return h(tag, attrs || {});
-  if (typeof content === 'string' || typeof content === 'number') return h(tag, attrs || {}, content);
-  if (Array.isArray(content)) return h(tag, attrs || {}, ...content);
-  if (content && typeof content === 'object' && (content as NexusElement).type) return h(tag, attrs || {}, content);
-  return h(tag, attrs || {});
+function el(tag: string, content?: any, attrs?: any): NexusElement {
+  const { content: normalizedContent, attrs: normalizedAttrs } = normalizeElementArgs(content, attrs);
+
+  if (normalizedContent === undefined) return h(tag, normalizedAttrs || {});
+  if (typeof normalizedContent === 'string' || typeof normalizedContent === 'number') return h(tag, normalizedAttrs || {}, normalizedContent);
+  if (Array.isArray(normalizedContent)) return h(tag, normalizedAttrs || {}, ...normalizedContent);
+  if (isNexusElement(normalizedContent)) return h(tag, normalizedAttrs || {}, normalizedContent);
+  return h(tag, normalizedAttrs || {});
 }
 
 // Block elements
-export function div(content?: Children, attrs?: Attrs) { return el('div', content, attrs); }
-export function span(content?: string | number, attrs?: Attrs) { return el('span', content, attrs); }
-export function p(content?: string | number, attrs?: Attrs) { return el('p', content, attrs); }
-export function h1(content?: string | number, attrs?: Attrs) { return el('h1', content, attrs); }
-export function h2(content?: string | number, attrs?: Attrs) { return el('h2', content, attrs); }
-export function h3(content?: string | number, attrs?: Attrs) { return el('h3', content, attrs); }
-export function h4(content?: string | number, attrs?: Attrs) { return el('h4', content, attrs); }
-export function h5(content?: string | number, attrs?: Attrs) { return el('h5', content, attrs); }
-export function h6(content?: string | number, attrs?: Attrs) { return el('h6', content, attrs); }
-export function a(content?: string | number, attrs?: Attrs) { return el('a', content, attrs); }
-export function strong(content?: string | number, attrs?: Attrs) { return el('strong', content, attrs); }
-export function em(content?: string | number, attrs?: Attrs) { return el('em', content, attrs); }
-export function small(content?: string | number, attrs?: Attrs) { return el('small', content, attrs); }
-export function blockquote(content?: string | number, attrs?: Attrs) { return el('blockquote', content, attrs); }
-export function code(content?: string | number, attrs?: Attrs) { return el('code', content, attrs); }
-export function pre(content?: string | number, attrs?: Attrs) { return el('pre', content, attrs); }
+export function div(content?: any, attrs?: any) { return el('div', content, attrs); }
+export function span(content?: any, attrs?: any) { return el('span', content, attrs); }
+export function p(content?: any, attrs?: any) { return el('p', content, attrs); }
+export function h1(content?: any, attrs?: any) { return el('h1', content, attrs); }
+export function h2(content?: any, attrs?: any) { return el('h2', content, attrs); }
+export function h3(content?: any, attrs?: any) { return el('h3', content, attrs); }
+export function h4(content?: any, attrs?: any) { return el('h4', content, attrs); }
+export function h5(content?: any, attrs?: any) { return el('h5', content, attrs); }
+export function h6(content?: any, attrs?: any) { return el('h6', content, attrs); }
+export function a(content?: any, attrs?: any) { return el('a', content, attrs); }
+export function strong(content?: any, attrs?: any) { return el('strong', content, attrs); }
+export function em(content?: any, attrs?: any) { return el('em', content, attrs); }
+export function small(content?: any, attrs?: any) { return el('small', content, attrs); }
+export function blockquote(content?: any, attrs?: any) { return el('blockquote', content, attrs); }
+export function code(content?: any, attrs?: any) { return el('code', content, attrs); }
+export function pre(content?: any, attrs?: any) { return el('pre', content, attrs); }
 
 // Interactive elements
-export function button(content?: string | number, attrs?: Attrs) { return el('button', content, attrs); }
-export function input(attrs?: Attrs) { return h('input', attrs || {}); }
-export function textarea(content?: string, attrs?: Attrs) { return el('textarea', content, attrs); }
-export function select(children?: any[], attrs?: Attrs) { return el('select', children, attrs); }
-export function option(label?: string, value?: string, attrs?: Attrs) { return el('option', label, { value, ...attrs }); }
+export function button(content?: any, attrs?: any) { return el('button', content, attrs); }
+export function input(attrs?: any) { return h('input', attrs || {}); }
+export function textarea(content?: any, attrs?: any) { return el('textarea', content, attrs); }
+export function select(children?: any, attrs?: any) { return el('select', children, attrs); }
+export function option(label?: any, value?: any, attrs?: any) { return el('option', label, { value, ...attrs }); }
 
 // Lists
-export function ul(items?: (string | number)[], attrs?: Attrs) { return el('ul', items?.map(item => li(item)), attrs); }
-export function ol(items?: (string | number)[], attrs?: Attrs) { return el('ol', items?.map(item => li(item)), attrs); }
-export function li(content?: Children, attrs?: Attrs) { return el('li', content, attrs); }
+export function ul(items?: any, attrs?: any) { return el('ul', items?.map ? items.map((item: any) => li(item)) : items, attrs); }
+export function ol(items?: any, attrs?: any) { return el('ol', items?.map ? items.map((item: any) => li(item)) : items, attrs); }
+export function li(content?: any, attrs?: any) { return el('li', content, attrs); }
 
 // Media
-export function img(src?: string, attrs?: Attrs) { return h('img', { src, ...attrs }); }
-export function video(attrs?: Attrs) { return h('video', attrs || {}); }
-export function audio(attrs?: Attrs) { return h('audio', attrs || {}); }
+export function img(src?: any, attrs?: any) { return h('img', { src, ...attrs }); }
+export function video(attrs?: any) { return h('video', attrs || {}); }
+export function audio(attrs?: any) { return h('audio', attrs || {}); }
 
 // Structure
-export function nav(children?: Children, attrs?: Attrs) { return el('nav', children, attrs); }
-export function header(children?: Children, attrs?: Attrs) { return el('header', children, attrs); }
-export function footer(children?: Children, attrs?: Attrs) { return el('footer', children, attrs); }
-export function main(children?: Children, attrs?: Attrs) { return el('main', children, attrs); }
-export function section(children?: Children, attrs?: Attrs) { return el('section', children, attrs); }
-export function article(children?: Children, attrs?: Attrs) { return el('article', children, attrs); }
-export function aside(children?: Children, attrs?: Attrs) { return el('aside', children, attrs); }
+export function nav(children?: any, attrs?: any) { return el('nav', children, attrs); }
+export function header(children?: any, attrs?: any) { return el('header', children, attrs); }
+export function footer(children?: any, attrs?: any) { return el('footer', children, attrs); }
+export function main(children?: any, attrs?: any) { return el('main', children, attrs); }
+export function section(children?: any, attrs?: any) { return el('section', children, attrs); }
+export function article(children?: any, attrs?: any) { return el('article', children, attrs); }
+export function aside(children?: any, attrs?: any) { return el('aside', children, attrs); }
 
 // Form elements
-export function form(children?: Children, attrs?: Attrs) { return el('form', children, attrs); }
-export function label(content?: string, attrs?: Attrs) { return el('label', content, attrs); }
-export function fieldset(children?: Children, attrs?: Attrs) { return el('fieldset', children, attrs); }
-export function legend(content?: string, attrs?: Attrs) { return el('legend', content, attrs); }
+export function form(children?: any, attrs?: any) { return el('form', children, attrs); }
+export function label(content?: any, attrs?: any) { return el('label', content, attrs); }
+export function fieldset(children?: any, attrs?: any) { return el('fieldset', children, attrs); }
+export function legend(content?: any, attrs?: any) { return el('legend', content, attrs); }
 
 // Other
 export function br() { return h('br', {}); }
@@ -214,6 +295,7 @@ export function createDOM(element: any): Node {
   }
 
   Object.entries(props).forEach(([key, val]) => {
+    if (/^\d+$/.test(key)) return;
     if (key.startsWith('data-') && val != null) el.setAttribute(key, String(val));
   });
 
@@ -241,8 +323,8 @@ export function createDOM(element: any): Node {
 
 interface AppConfig {
   root: string | HTMLElement;
-  state: Record<string, any>;
-  render: (state: Record<string, any>) => any;
+  state: any;
+  render: (state: any) => any;
 }
 
 export function createApp(config: AppConfig) {
@@ -260,7 +342,7 @@ export function createApp(config: AppConfig) {
     ? (config.state as Store)
     : createStore(config.state as Record<string, any>);
 
-  function render(state: Record<string, any>) {
+  function render(state: any) {
     rootEl.innerHTML = '';
     const node = createDOM(config.render(state));
     if (node) rootEl.appendChild(node);
@@ -312,14 +394,14 @@ export class Component {
 // STATE
 // ============================================================================
 
-type Subscriber = (state: Record<string, any>) => void;
+type Subscriber = (state: any) => void;
 
 export class Store {
   private state: Record<string, any>;
   private subscribers = new Set<Subscriber>();
   private listeners = new Map<string, Set<Subscriber>>();
 
-  constructor(initialState: Record<string, any> = {}) {
+  constructor(initialState: any = {}) {
     this.state = { ...initialState };
   }
 
@@ -357,7 +439,7 @@ export class Store {
   }
 }
 
-export function createStore(initialState?: Record<string, any>) { return new Store(initialState); }
+export function createStore(initialState?: any) { return new Store(initialState); }
 
 // ============================================================================
 // ROUTER
