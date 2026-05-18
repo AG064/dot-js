@@ -1,269 +1,154 @@
 /**
  * Nexus.js Landing Page Example
  *
- * This example demonstrates a modern product landing page built with Nexus.js:
- * - Layout helpers: row(), column(), grid(), center(), flex()
- * - Event handling: on(), onMulti()
- * - State management: createStore()
- * - CSS helpers: cls(), css()
- * - All major element functions: div, h1, h2, button, etc.
+ * A simple product landing page demonstrating Nexus.js API:
+ * - Element functions: div, h1, h2, p, button, etc.
+ * - Layout helpers: row, column, grid, center
+ * - Event handling: on()
+ * - CSS helpers: cls, css
  */
 
 import {
-  // Elements
   div, h1, h2, h3, p, span, a, button, input, textarea, form,
   img, nav, header, footer, main, section,
   ul, li, hr, spacer,
-  // Attributes
   cls, css, id, on, onMulti, href,
-  // Layout
   row, column, center, grid, flex, full,
-  // State & Core
   createStore, createDOM,
 } from '../framework/src/nexus';
 
 // ============================================================================
-// STORE — Reactive state for the pricing tier selection
+// STORE — Simple state
 // ============================================================================
 
 const store = createStore({
-  selectedPlan: 'standard',
-  features: [
-    { icon: '🚀', title: 'Fast', desc: 'Built for speed with minimal overhead' },
-    { icon: '🔒', title: 'Secure', desc: 'Type-safe by default with TypeScript' },
-    { icon: '📦', title: 'Lightweight', desc: 'Under 5KB gzipped, no dependencies' },
-    { icon: '⚡', title: 'Intuitive', desc: 'Write HTML-like code in JavaScript' },
-  ],
   plans: [
-    { id: 'basic', name: 'Basic', price: 0, features: ['5 projects', '1GB storage', 'Community support'] },
-    { id: 'standard', name: 'Standard', price: 19, features: ['25 projects', '10GB storage', 'Email support', 'API access'] },
-    { id: 'pro', name: 'Pro', price: 49, features: ['Unlimited projects', '100GB storage', 'Priority support', 'API access', 'Custom domains'] },
-  ],
-  navLinks: [
-    { label: 'Features', href: '#features' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'Contact', href: '#contact' },
+    { id: 'basic', name: 'Basic', price: 0 },
+    { id: 'pro', name: 'Pro', price: 19 },
   ],
 });
 
 // ============================================================================
-// RENDER FUNCTIONS — Each section is a separate function for clarity
+// SECTIONS
 // ============================================================================
 
-/**
- * Sticky navigation bar with logo and links
- */
 function renderNavbar() {
   return header([
     nav([cls('navbar')], [
       row([
-        // Brand / Logo
+        div([a('Nexus.js', { href: '#' })], css({ fontWeight: '700', fontSize: '20px' })),
         div([
-          a('Nexus.js', { href: '#', className: 'brand' }),
-        ]),
-        // Navigation links + CTA button
-        div([
-          ...store.get('navLinks').map(link =>
-            a(link.label, { href: link.href, className: 'nav-link' })
-          ),
-          button('Get Started', {
-            on: { click: () => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }) },
-            className: 'btn-primary',
-          }),
-        ], cls('nav-menu')),
+          a('Features', { href: '#features' }),
+          a('Pricing', { href: '#pricing' }),
+        ], css({ display: 'flex', gap: '16px' })),
       ], 0),
     ]),
-  ], css({ position: 'sticky', top: 0, background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 100 }));
+  ], css({ padding: '20px', background: '#fff', borderBottom: '1px solid #eee' }));
 }
 
-/**
- * Hero section with headline, description, CTA buttons, and hero image
- */
 function renderHero() {
-  return section([cls('hero')], [
+  return section([css({ padding: '80px 20px', background: '#f9f9f9', textAlign: 'center' })], [
     center([
-      span('Introducing', css({ fontSize: '14px', color: '#0969da', fontWeight: '600', letterSpacing: '2px', textTransform: 'uppercase' })),
-      h1('Build web apps with pleasure', css({ fontSize: '48px', fontWeight: '800', color: '#1a1a2e', lineHeight: '1.2', marginTop: '12px' })),
-      p('A lightweight frontend framework that makes building interactive UIs feel natural. No complex setup, no steep learning curve.', css({ fontSize: '18px', color: '#57606a', maxWidth: '600px', marginTop: '16px', lineHeight: '1.6' })),
-      spacer(32),
-      // CTA buttons
+      h1('Nexus.js', css({ fontSize: '48px', marginBottom: '16px' })),
+      p('A lightweight frontend framework for building web apps', css({ fontSize: '18px', color: '#666', marginBottom: '32px' })),
       row([
-        button('Start Free', {
-          on: { click: () => store.set('selectedPlan', 'basic') },
-          className: 'btn-primary btn-lg',
-        }),
-        button('See Examples', {
-          on: { click: () => window.open('https://github.com/AG064/dot-js', '_blank') },
-          className: 'btn-secondary btn-lg',
-        }),
+        button('Get Started', on('click', () => console.log('Clicked!'))),
+        button('Learn More', css({ background: '#666' })),
       ], 16),
-      spacer(48),
-      // Hero image
-      img('https://picsum.photos/800/400?random=1', { alt: 'Dashboard preview', style: { width: '100%', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' } }),
     ], 800),
   ]);
 }
 
-/**
- * Features section with 2x2 grid of feature cards
- */
 function renderFeatures() {
-  const features = store.get('features');
-  return section([id('features'), cls('section')], [
+  return section([id('features'), css({ padding: '60px 20px' })], [
     center([
-      h2('Everything you need', css({ fontSize: '36px', fontWeight: '700', textAlign: 'center', color: '#1a1a2e' })),
-      p('Powerful features wrapped in a simple API', css({ fontSize: '18px', color: '#57606a', textAlign: 'center', marginTop: '8px' })),
-      spacer(40),
-      // 2-column grid of feature cards
-      grid(
-        features.map(f => div([
-          span(f.icon, css({ fontSize: '32px' })),
-          h3(f.title, css({ fontSize: '20px', fontWeight: '600', marginTop: '12px' })),
-          p(f.desc, css({ fontSize: '15px', color: '#57606a', marginTop: '8px', lineHeight: '1.5' })),
-        ], css({ padding: '24px', background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }))),
-        2, 24
-      ),
-    ], 1000),
+      h2('Features', css({ textAlign: 'center', marginBottom: '40px' })),
+      grid([
+        div([h3('Fast'), p('Minimal overhead, maximum speed')], css({ padding: '20px' })),
+        div([h3('Simple'), p('Intuitive API anyone can learn')], css({ padding: '20px' })),
+        div([h3('Lightweight'), p('Under 5KB, no dependencies')], css({ padding: '20px' })),
+      ], 3, 20),
+    ], 800),
   ]);
 }
 
-/**
- * Pricing section with 3 pricing tiers
- * Clicking a plan updates the store state
- */
 function renderPricing() {
-  const { plans, selectedPlan } = store.getState();
-  return section([id('pricing'), cls('section')], [
+  return section([id('pricing'), css({ padding: '60px 20px', background: '#f9f9f9' })], [
     center([
-      h2('Simple pricing', css({ fontSize: '36px', fontWeight: '700', textAlign: 'center', color: '#1a1a2e' })),
-      p('Start free, upgrade when you need', css({ fontSize: '18px', color: '#57606a', textAlign: 'center', marginTop: '8px' })),
-      spacer(40),
-      // Horizontal flex layout for pricing cards
+      h2('Pricing', css({ textAlign: 'center', marginBottom: '40px' })),
       flex([
-        ...plans.map(plan => {
-          const isSelected = selectedPlan === plan.id;
-          const isPopular = plan.id === 'standard';
-          return div([
-            isPopular ? span('Most Popular', css({ fontSize: '12px', fontWeight: '600', color: '#fff', background: '#0969da', padding: '4px 12px', borderRadius: '20px' })) : null,
-            h3(plan.name, css({ fontSize: '24px', fontWeight: '600', marginTop: '8px' })),
-            div([css({ fontSize: '48px', fontWeight: '800', color: '#1a1a2e' })], `$${plan.price}`),
-            plan.price > 0 ? span('/month', css({ fontSize: '14px', color: '#57606a' })) : span('/forever', css({ fontSize: '14px', color: '#57606a' })),
-            hr(css({ margin: '20px 0', border: 'none', borderTop: '1px solid #e8ecf0' })),
-            ul(plan.features.map(f => li(f, css({ padding: '8px 0', color: '#57606a' }))), css({ listStyle: 'none' })),
-            spacer(16),
-            button(isSelected ? 'Selected' : 'Choose Plan', {
-              on: { click: () => store.set('selectedPlan', plan.id) },
-              className: isSelected ? 'btn-secondary' : 'btn-primary',
-              style: { width: '100%' },
-            }),
-          ], css({
-            padding: '32px',
-            background: isSelected ? '#f6f8fa' : '#fff',
-            border: isSelected ? '2px solid #0969da' : '2px solid #e8ecf0',
-            borderRadius: '16px',
-            minWidth: '260px',
-          }));
-        }),
+        div([
+          h3('Basic', css({ fontSize: '24px' })),
+          span('$0', css({ fontSize: '36px', fontWeight: 'bold' })),
+          span('/free', css({ color: '#666' })),
+          hr(),
+          ul(['5 projects', '1GB storage'], css({ listStyle: 'none', padding: 0 })),
+          button('Choose', on('click', () => {})),
+        ], css({ padding: '24px', background: '#fff', borderRadius: '8px', minWidth: '200px' })),
+        div([
+          h3('Pro', css({ fontSize: '24px' })),
+          span('$19', css({ fontSize: '36px', fontWeight: 'bold' })),
+          span('/month', css({ color: '#666' })),
+          hr(),
+          ul(['Unlimited projects', '100GB storage'], css({ listStyle: 'none', padding: 0 })),
+          button('Choose', on('click', () => {})),
+        ], css({ padding: '24px', background: '#fff', borderRadius: '8px', minWidth: '200px' })),
       ], 'row', 24, 'stretch'),
-    ], 1000),
+    ], 800),
   ]);
 }
 
-/**
- * Contact form section
- */
 function renderContact() {
-  return section([id('contact'), cls('section')], [
+  return section([css({ padding: '60px 20px' })], [
     center([
-      h2('Get in touch', css({ fontSize: '36px', fontWeight: '700', textAlign: 'center', color: '#1a1a2e' })),
-      p("Have questions? We'd love to hear from you.", css({ fontSize: '18px', color: '#57606a', textAlign: 'center', marginTop: '8px' })),
-      spacer(40),
+      h2('Contact Us', css({ textAlign: 'center', marginBottom: '32px' })),
       div([
         form([
-          // Name field
-          div([css({ marginBottom: '20px' })], [
-            span('Name', css({ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1a1a2e', marginBottom: '6px' })),
-            input({ id: 'contact-name', placeholder: 'Your name', required: true }),
+          div([css({ marginBottom: '16px' })], [
+            span('Name', css({ display: 'block', marginBottom: '4px', fontWeight: '500' })),
+            input({ placeholder: 'Your name' }),
           ]),
-          // Email field
-          div([css({ marginBottom: '20px' })], [
-            span('Email', css({ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1a1a2e', marginBottom: '6px' })),
-            input({ id: 'contact-email', type: 'email', placeholder: 'you@example.com', required: true }),
+          div([css({ marginBottom: '16px' })], [
+            span('Email', css({ display: 'block', marginBottom: '4px', fontWeight: '500' })),
+            input({ placeholder: 'you@example.com' }),
           ]),
-          // Message field
-          div([css({ marginBottom: '20px' })], [
-            span('Message', css({ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1a1a2e', marginBottom: '6px' })),
-            textarea('', { id: 'contact-message', placeholder: 'Your message...', required: true }),
+          div([css({ marginBottom: '16px' })], [
+            span('Message', css({ display: 'block', marginBottom: '4px', fontWeight: '500' })),
+            textarea({ placeholder: 'Your message' }),
           ]),
-          button('Send Message', {
-            type: 'submit',
-            className: 'btn-primary btn-lg',
-          }),
-        ], css({ maxWidth: '500px', margin: '0 auto' })),
-      ], css({ background: '#fff', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' })),
-    ], 800),
+          button('Send', { type: 'submit' }),
+        ], css({ maxWidth: '400px', margin: '0 auto' })),
+      ], css({ background: '#fff', padding: '32px', borderRadius: '8px' })),
+    ], 600),
   ]);
 }
 
-/**
- * Footer with brand and social links
- */
 function renderFooter() {
-  return footer([cls('footer')], [
-    center([
-      row([
-        div([
-          span('Nexus.js', css({ fontWeight: '600', fontSize: '18px' })),
-          p('Building the future of web development.', css({ fontSize: '14px', color: '#57606a', marginTop: '4px' })),
-        ]),
-        div([
-          a('GitHub', { href: 'https://github.com/AG064/dot-js', target: '_blank' }),
-          a('Documentation', { href: '#' }),
-          a('Twitter', { href: '#' }),
-        ], css({ display: 'flex', gap: '24px' })),
-      ], 0),
-      hr(css({ margin: '24px 0', border: 'none', borderTop: '1px solid #e8ecf0' })),
-      p('© 2026 Nexus.js. All rights reserved.', css({ fontSize: '14px', color: '#57606a', textAlign: 'center' })),
-    ], 1000),
+  return footer([css({ padding: '32px 20px', background: '#333', color: '#fff', textAlign: 'center' })], [
+    p('© 2026 Nexus.js. All rights reserved.'),
   ]);
 }
 
-/**
- * Main render function — assembles all sections
- */
 function renderApp() {
   return div([
     renderNavbar(),
-    main([
-      renderHero(),
-      renderFeatures(),
-      renderPricing(),
-      renderContact(),
-    ]),
+    main([renderHero(), renderFeatures(), renderPricing(), renderContact()]),
     renderFooter(),
   ]);
 }
 
 // ============================================================================
-// BOOTSTRAP — Mount the app when DOM is ready
+// BOOTSTRAP
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
   const root = document.getElementById('app');
-  if (!root) return;
-
-  // Render the app into the DOM
+  if (!root) {
+    console.error('App element not found');
+    return;
+  }
+  console.log('Rendering app...');
   const node = createDOM(renderApp());
   root.appendChild(node);
-
-  // Enable smooth scrolling for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach(link => {
-    link.addEventListener('click', (e) => {
-      const href = link.getAttribute('href');
-      if (href && href !== '#') {
-        e.preventDefault();
-        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
-      }
-    });
-  });
+  console.log('App rendered');
 });
