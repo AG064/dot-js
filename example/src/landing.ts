@@ -1,24 +1,29 @@
 /**
  * Nexus.js Landing Page Example
- * A modern product landing page demonstrating:
- * - Layout helpers (row, column, center, grid)
- * - Event handling (on, onMulti)
- * - State management (createStore)
- * - CSS helpers (cls, css)
- * - Components pattern
+ *
+ * This example demonstrates a modern product landing page built with Nexus.js:
+ * - Layout helpers: row(), column(), grid(), center(), flex()
+ * - Event handling: on(), onMulti()
+ * - State management: createStore()
+ * - CSS helpers: cls(), css()
+ * - All major element functions: div, h1, h2, button, etc.
  */
 
 import {
+  // Elements
   div, h1, h2, h3, p, span, a, button, input, textarea, form,
-  img, nav, header, footer, main, section, article,
+  img, nav, header, footer, main, section,
   ul, li, hr, spacer,
-  cls, css, id, on, onMulti, href, ph, type, name, val, required,
+  // Attributes
+  cls, css, id, on, onMulti, href,
+  // Layout
   row, column, center, grid, flex, full,
-  createStore, createDOM, createApp,
+  // State & Core
+  createStore, createDOM,
 } from '../framework/src/nexus';
 
 // ============================================================================
-// STORE — Pricing tier selection
+// STORE — Reactive state for the pricing tier selection
 // ============================================================================
 
 const store = createStore({
@@ -42,16 +47,21 @@ const store = createStore({
 });
 
 // ============================================================================
-// RENDER FUNCTIONS
+// RENDER FUNCTIONS — Each section is a separate function for clarity
 // ============================================================================
 
+/**
+ * Sticky navigation bar with logo and links
+ */
 function renderNavbar() {
   return header([
     nav([cls('navbar')], [
       row([
+        // Brand / Logo
         div([
           a('Nexus.js', { href: '#', className: 'brand' }),
         ]),
+        // Navigation links + CTA button
         div([
           ...store.get('navLinks').map(link =>
             a(link.label, { href: link.href, className: 'nav-link' })
@@ -66,6 +76,9 @@ function renderNavbar() {
   ], css({ position: 'sticky', top: 0, background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 100 }));
 }
 
+/**
+ * Hero section with headline, description, CTA buttons, and hero image
+ */
 function renderHero() {
   return section([cls('hero')], [
     center([
@@ -73,6 +86,7 @@ function renderHero() {
       h1('Build web apps with pleasure', css({ fontSize: '48px', fontWeight: '800', color: '#1a1a2e', lineHeight: '1.2', marginTop: '12px' })),
       p('A lightweight frontend framework that makes building interactive UIs feel natural. No complex setup, no steep learning curve.', css({ fontSize: '18px', color: '#57606a', maxWidth: '600px', marginTop: '16px', lineHeight: '1.6' })),
       spacer(32),
+      // CTA buttons
       row([
         button('Start Free', {
           on: { click: () => store.set('selectedPlan', 'basic') },
@@ -84,11 +98,15 @@ function renderHero() {
         }),
       ], 16),
       spacer(48),
+      // Hero image
       img('https://picsum.photos/800/400?random=1', { alt: 'Dashboard preview', style: { width: '100%', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' } }),
     ], 800),
   ]);
 }
 
+/**
+ * Features section with 2x2 grid of feature cards
+ */
 function renderFeatures() {
   const features = store.get('features');
   return section([id('features'), cls('section')], [
@@ -96,6 +114,7 @@ function renderFeatures() {
       h2('Everything you need', css({ fontSize: '36px', fontWeight: '700', textAlign: 'center', color: '#1a1a2e' })),
       p('Powerful features wrapped in a simple API', css({ fontSize: '18px', color: '#57606a', textAlign: 'center', marginTop: '8px' })),
       spacer(40),
+      // 2-column grid of feature cards
       grid(
         features.map(f => div([
           span(f.icon, css({ fontSize: '32px' })),
@@ -108,6 +127,10 @@ function renderFeatures() {
   ]);
 }
 
+/**
+ * Pricing section with 3 pricing tiers
+ * Clicking a plan updates the store state
+ */
 function renderPricing() {
   const { plans, selectedPlan } = store.getState();
   return section([id('pricing'), cls('section')], [
@@ -115,6 +138,7 @@ function renderPricing() {
       h2('Simple pricing', css({ fontSize: '36px', fontWeight: '700', textAlign: 'center', color: '#1a1a2e' })),
       p('Start free, upgrade when you need', css({ fontSize: '18px', color: '#57606a', textAlign: 'center', marginTop: '8px' })),
       spacer(40),
+      // Horizontal flex layout for pricing cards
       flex([
         ...plans.map(plan => {
           const isSelected = selectedPlan === plan.id;
@@ -122,9 +146,7 @@ function renderPricing() {
           return div([
             isPopular ? span('Most Popular', css({ fontSize: '12px', fontWeight: '600', color: '#fff', background: '#0969da', padding: '4px 12px', borderRadius: '20px' })) : null,
             h3(plan.name, css({ fontSize: '24px', fontWeight: '600', marginTop: '8px' })),
-            div([css({ fontSize: '48px', fontWeight: '800', color: '#1a1a2e' })],
-              `$${plan.price}`
-            ),
+            div([css({ fontSize: '48px', fontWeight: '800', color: '#1a1a2e' })], `$${plan.price}`),
             plan.price > 0 ? span('/month', css({ fontSize: '14px', color: '#57606a' })) : span('/forever', css({ fontSize: '14px', color: '#57606a' })),
             hr(css({ margin: '20px 0', border: 'none', borderTop: '1px solid #e8ecf0' })),
             ul(plan.features.map(f => li(f, css({ padding: '8px 0', color: '#57606a' }))), css({ listStyle: 'none' })),
@@ -147,10 +169,10 @@ function renderPricing() {
   ]);
 }
 
+/**
+ * Contact form section
+ */
 function renderContact() {
-  let formState = { name: '', email: '', message: '' };
-  let submitted = false;
-
   return section([id('contact'), cls('section')], [
     center([
       h2('Get in touch', css({ fontSize: '36px', fontWeight: '700', textAlign: 'center', color: '#1a1a2e' })),
@@ -158,16 +180,19 @@ function renderContact() {
       spacer(40),
       div([
         form([
+          // Name field
           div([css({ marginBottom: '20px' })], [
-            label('Name', { for: 'contact-name' }),
+            span('Name', css({ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1a1a2e', marginBottom: '6px' })),
             input({ id: 'contact-name', placeholder: 'Your name', required: true }),
           ]),
+          // Email field
           div([css({ marginBottom: '20px' })], [
-            label('Email', { for: 'contact-email' }),
+            span('Email', css({ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1a1a2e', marginBottom: '6px' })),
             input({ id: 'contact-email', type: 'email', placeholder: 'you@example.com', required: true }),
           ]),
+          // Message field
           div([css({ marginBottom: '20px' })], [
-            label('Message', { for: 'contact-message' }),
+            span('Message', css({ display: 'block', fontSize: '14px', fontWeight: '500', color: '#1a1a2e', marginBottom: '6px' })),
             textarea('', { id: 'contact-message', placeholder: 'Your message...', required: true }),
           ]),
           button('Send Message', {
@@ -180,6 +205,9 @@ function renderContact() {
   ]);
 }
 
+/**
+ * Footer with brand and social links
+ */
 function renderFooter() {
   return footer([cls('footer')], [
     center([
@@ -188,7 +216,7 @@ function renderFooter() {
           span('Nexus.js', css({ fontWeight: '600', fontSize: '18px' })),
           p('Building the future of web development.', css({ fontSize: '14px', color: '#57606a', marginTop: '4px' })),
         ]),
-        div([cls('footer-links')], [
+        div([
           a('GitHub', { href: 'https://github.com/AG064/dot-js', target: '_blank' }),
           a('Documentation', { href: '#' }),
           a('Twitter', { href: '#' }),
@@ -200,6 +228,9 @@ function renderFooter() {
   ]);
 }
 
+/**
+ * Main render function — assembles all sections
+ */
 function renderApp() {
   return div([
     renderNavbar(),
@@ -214,17 +245,18 @@ function renderApp() {
 }
 
 // ============================================================================
-// BOOTSTRAP
+// BOOTSTRAP — Mount the app when DOM is ready
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
   const root = document.getElementById('app');
   if (!root) return;
 
+  // Render the app into the DOM
   const node = createDOM(renderApp());
   root.appendChild(node);
 
-  // Setup smooth scroll for anchor links
+  // Enable smooth scrolling for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', (e) => {
       const href = link.getAttribute('href');
