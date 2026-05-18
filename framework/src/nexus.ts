@@ -252,25 +252,13 @@ export function createApp(config: AppConfig) {
 
   if (!rootEl) { console.error('Nexus: Root element not found:', config.root); return; }
 
-  const listeners: Set<(state: any) => void> = new Set();
+  // Detect if config.state is a Store instance (has getState method) or plain object
+  const isStore = config.state && typeof (config.state as any).getState === 'function';
   
-  // config.state can be a Store instance or a plain state object
-  const initialState = (config.state as any).getState
-    ? (config.state as any).getState()
-    : { ...config.state as object };
-  
-  const store = {
-    state: initialState,
-    setState: (newState: any) => {
-      store.state = { ...store.state, ...newState };
-      listeners.forEach(fn => fn(store.state));
-    },
-    subscribe: (fn: (state: any) => void) => {
-      listeners.add(fn);
-      return () => listeners.delete(fn);
-    },
-    get: (key: string) => store.state[key],
-  };
+  // If it's a Store, use it directly; otherwise create a new Store from plain state
+  const store = isStore
+    ? (config.state as Store)
+    : createStore(config.state as Record<string, any>);
 
   function render(state: Record<string, any>) {
     rootEl.innerHTML = '';
@@ -278,8 +266,12 @@ export function createApp(config: AppConfig) {
     if (node) rootEl.appendChild(node);
   }
 
+  // Subscribe to store changes and re-render
   store.subscribe(render);
-  render(store.state);
+  
+  // Initial render
+  render(store.getState());
+  
   return store;
 }
 

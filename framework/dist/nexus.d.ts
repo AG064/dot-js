@@ -131,12 +131,7 @@ interface AppConfig {
     state: Record<string, any>;
     render: (state: Record<string, any>) => any;
 }
-export declare function createApp(config: AppConfig): {
-    state: any;
-    setState: (newState: any) => void;
-    subscribe: (fn: (state: any) => void) => () => boolean;
-    get: (key: string) => any;
-} | undefined;
+export declare function createApp(config: AppConfig): Store | undefined;
 export declare class Component {
     private el;
     private _state;
