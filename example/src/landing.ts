@@ -143,12 +143,7 @@ function renderApp() {
 // BOOTSTRAP
 // ============================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-  const root = document.getElementById('app');
-  if (!root) {
-    console.error('App element not found');
-    return;
-  }
-  const node = createDOM(renderApp());
-  root.appendChild(node);
-});
+const root = document.getElementById('app');
+if (root) {
+  root.appendChild(createDOM(renderApp()));
+}
