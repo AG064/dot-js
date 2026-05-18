@@ -1,16 +1,20 @@
 /**
- * Nexus.js - A lightweight frontend framework for building reactive web applications
+ * Nexus.js — A comfortable frontend framework
  *
- * Core exports:
- * - $(): Element creation & DOM manipulation
- * - Component(): Reusable component factory
- * - Store: Reactive state management
- * - Router: Hash-based URL routing
- * - http: HTTP client for remote data fetching
+ * Primary API is designed to be intuitive and readable:
+ * - Element functions: div(), h1(), button(), input(), etc.
+ * - Attribute helpers: cls(), css(), id(), on(), etc.
+ * - Layout helpers: row(), column(), center(), grid()
+ * - State: createStore()
+ * - Router: createRouter()
+ * - HTTP: createHttp()
+ * - App: createApp()
+ *
+ * Everything is vanilla TypeScript, no external frameworks.
  */
-/**
- * Create a virtual DOM element
- */
+// ============================================================================
+// CORE ELEMENT SYSTEM
+// ============================================================================
 export function h(type, props = {}, ...children) {
     return {
         type,
@@ -22,275 +26,236 @@ export function h(type, props = {}, ...children) {
 function flattenChildren(children) {
     const result = [];
     for (const child of children) {
+        if (child === null || child === undefined)
+            continue;
         if (Array.isArray(child)) {
             result.push(...flattenChildren(child));
         }
-        else if (child != null) {
-            const isBool = typeof child === 'boolean';
-            if (!isBool) {
-                result.push(child);
-            }
+        else if (typeof child !== 'boolean') {
+            result.push(child);
         }
     }
     return result;
 }
-/**
- * Convert virtual element to real DOM
- */
-function createDOM(element, parent) {
-    const { type, props, children } = element;
-    if (type === 'text') {
-        const textNode = document.createTextNode(String(children[0] || ''));
-        const container = parent || document.createElement('span');
-        container.appendChild(textNode);
-        return { element: container, listeners: new Map() };
+// ============================================================================
+// ELEMENT FUNCTIONS (PRIMARY API)
+// ============================================================================
+function el(tag, content, attrs) {
+    if (content === undefined)
+        return h(tag, attrs || {});
+    if (typeof content === 'string' || typeof content === 'number')
+        return h(tag, attrs || {}, content);
+    if (Array.isArray(content))
+        return h(tag, attrs || {}, ...content);
+    if (content && typeof content === 'object' && content.type)
+        return h(tag, attrs || {}, content);
+    return h(tag, attrs || {});
+}
+// Block elements
+export function div(content, attrs) { return el('div', content, attrs); }
+export function span(content, attrs) { return el('span', content, attrs); }
+export function p(content, attrs) { return el('p', content, attrs); }
+export function h1(content, attrs) { return el('h1', content, attrs); }
+export function h2(content, attrs) { return el('h2', content, attrs); }
+export function h3(content, attrs) { return el('h3', content, attrs); }
+export function h4(content, attrs) { return el('h4', content, attrs); }
+export function h5(content, attrs) { return el('h5', content, attrs); }
+export function h6(content, attrs) { return el('h6', content, attrs); }
+export function a(content, attrs) { return el('a', content, attrs); }
+export function strong(content, attrs) { return el('strong', content, attrs); }
+export function em(content, attrs) { return el('em', content, attrs); }
+export function small(content, attrs) { return el('small', content, attrs); }
+export function blockquote(content, attrs) { return el('blockquote', content, attrs); }
+export function code(content, attrs) { return el('code', content, attrs); }
+export function pre(content, attrs) { return el('pre', content, attrs); }
+// Interactive elements
+export function button(content, attrs) { return el('button', content, attrs); }
+export function input(attrs) { return h('input', attrs || {}); }
+export function textarea(content, attrs) { return el('textarea', content, attrs); }
+export function select(children, attrs) { return el('select', children, attrs); }
+export function option(label, value, attrs) { return el('option', label, { value, ...attrs }); }
+// Lists
+export function ul(items, attrs) { return el('ul', items?.map(item => li(item)), attrs); }
+export function ol(items, attrs) { return el('ol', items?.map(item => li(item)), attrs); }
+export function li(content, attrs) { return el('li', content, attrs); }
+// Media
+export function img(src, attrs) { return h('img', { src, ...attrs }); }
+export function video(attrs) { return h('video', attrs || {}); }
+export function audio(attrs) { return h('audio', attrs || {}); }
+// Structure
+export function nav(children, attrs) { return el('nav', children, attrs); }
+export function header(children, attrs) { return el('header', children, attrs); }
+export function footer(children, attrs) { return el('footer', children, attrs); }
+export function main(children, attrs) { return el('main', children, attrs); }
+export function section(children, attrs) { return el('section', children, attrs); }
+export function article(children, attrs) { return el('article', children, attrs); }
+export function aside(children, attrs) { return el('aside', children, attrs); }
+// Form elements
+export function form(children, attrs) { return el('form', children, attrs); }
+export function label(content, attrs) { return el('label', content, attrs); }
+export function fieldset(children, attrs) { return el('fieldset', children, attrs); }
+export function legend(content, attrs) { return el('legend', content, attrs); }
+// Other
+export function br() { return h('br', {}); }
+export function hr(attrs) { return h('hr', attrs || {}); }
+export function spacer(size = 16) { return div('', css({ height: size + 'px' })); }
+// ============================================================================
+// ATTRIBUTE HELPERS
+// ============================================================================
+export function cls(...names) { return { className: names.join(' ') }; }
+export function css(styles) { return { style: styles }; }
+export function id(name) { return { id: name }; }
+export function data(key, value) { return { ['data-' + key]: value }; }
+export function on(event, handler) { return { on: { [event]: handler } }; }
+export function onMulti(events) { return { on: events }; }
+export function href(url, target) { return target ? { href: url, target } : { href: url }; }
+export function ph(text) { return { placeholder: text }; }
+export function type(t) { return { type: t }; }
+export function name(n) { return { name: n }; }
+export function val(v) { return { value: v }; }
+export function disabled() { return { disabled: true }; }
+export function required() { return { required: true }; }
+export function autofocus() { return { autofocus: true }; }
+export function readonly() { return { readOnly: true }; }
+export function checked() { return { checked: true }; }
+// ============================================================================
+// LAYOUT HELPERS
+// ============================================================================
+export function row(children, gap = 16) {
+    return div(children, css({ display: 'flex', gap: gap + 'px', alignItems: 'center' }));
+}
+export function column(children, gap = 16) {
+    return div(children, css({ display: 'flex', flexDirection: 'column', gap: gap + 'px' }));
+}
+export function center(children, maxWidth = 1200) {
+    return div(children, css({ maxWidth: maxWidth + 'px', margin: '0 auto', padding: '0 20px' }));
+}
+export function grid(children, columns = 3, gap = 20) {
+    return div(children, css({
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        gap: gap + 'px',
+    }));
+}
+export function flex(children, direction = 'row', gap = 16, align) {
+    const style = { display: 'flex', flexDirection: direction, gap: gap + 'px' };
+    if (align)
+        style.alignItems = align;
+    return div(children, css(style));
+}
+export function full(child) {
+    return div([child], css({ width: '100%', height: '100%' }));
+}
+// ============================================================================
+// DOM CREATION
+// ============================================================================
+export function createDOM(element) {
+    if (element === null || element === undefined)
+        return document.createTextNode('');
+    if (typeof element === 'string' || typeof element === 'number')
+        return document.createTextNode(String(element));
+    if (typeof element !== 'object')
+        return document.createTextNode('');
+    if (Array.isArray(element)) {
+        const frag = document.createDocumentFragment();
+        element.forEach(child => { if (child != null)
+            frag.appendChild(createDOM(child)); });
+        return frag;
     }
+    const { type, props = {}, children = [] } = element;
+    if (!type)
+        return document.createTextNode('');
     const el = document.createElement(type);
-    // Apply attributes
-    if (props.attrs) {
-        for (const [key, value] of Object.entries(props.attrs)) {
-            if (value !== false && value != null) {
-                el.setAttribute(key, String(value));
-            }
-        }
-    }
-    // Apply styles
+    if (props.className)
+        el.className = props.className;
+    if (props.id)
+        el.id = props.id;
     if (props.style) {
-        const styles = props.style;
-        for (const [key, value] of Object.entries(styles)) {
-            el.style[key] = String(value);
-        }
-    }
-    // Apply className
-    if (props.className) {
-        el.className = String(props.className);
-    }
-    // Apply id
-    if (props.id) {
-        el.id = String(props.id);
-    }
-    // Apply data attributes
-    for (const [key, value] of Object.entries(props)) {
-        if (key.startsWith('data-')) {
-            el.setAttribute(key, String(value));
-        }
-    }
-    // Handle special props
-    const { on, attrs, style, className, id, children: _, ...rest } = props;
-    // Apply event listeners (registered during render, not via addEventListener)
-    if (on) {
-        for (const [eventName, handler] of Object.entries(on)) {
-            if (typeof handler === 'function') {
-                // Store handler reference for later attachment
-                el._nexusHandlers = el._nexusHandlers || {};
-                el._nexusHandlers[eventName] = handler;
-                // Use event delegation at component level
-                el.addEventListener(eventName, handler);
-            }
-        }
-    }
-    // Handle value special case
-    if ('value' in props && (type === 'input' || type === 'textarea' || type === 'select')) {
-        el.value = String(props.value);
-    }
-    // Handle checked special case
-    if ('checked' in props && type === 'input') {
-        el.checked = Boolean(props.checked);
-    }
-    // Handle disabled
-    if (props.disabled === true) {
-        el.setAttribute('disabled', '');
-    }
-    // Handle placeholder
-    if ('placeholder' in props) {
-        el.setAttribute('placeholder', String(props.placeholder));
-    }
-    // Handle href/src etc
-    for (const key of ['href', 'src', 'alt', 'title', 'placeholder']) {
-        if (key in props) {
-            el.setAttribute(key, String(props[key]));
-        }
-    }
-    // Handle innerHTML (dangerous but allowed for performance)
-    if ('innerHTML' in props) {
-        el.innerHTML = String(props.innerHTML);
-    }
-    // Handle text content for leaf elements
-    if (children.length === 1 && typeof children[0] === 'string' && !el.innerHTML) {
-        el.textContent = children[0];
-    }
-    else {
-        // Recursively create children
-        for (const child of children) {
-            if (typeof child === 'string' || typeof child === 'number') {
-                el.appendChild(document.createTextNode(String(child)));
-            }
-            else if (child && typeof child === 'object' && child.type) {
-                const childNode = createDOM(child, el);
-                el.appendChild(childNode.element);
-            }
-        }
-    }
-    return { element: el, listeners: new Map() };
-}
-/**
- * Mount a virtual element to the DOM
- */
-function mount(element, container) {
-    const node = createDOM(element);
-    container.appendChild(node.element);
-    return node.element;
-}
-// ============================================================================
-// JQUERY-LIKE ELEMENT CREATION SHORTHAND
-// ============================================================================
-/**
- * Shorthand for h() - create DOM elements with chainable API
- *
- * Usage:
- *   $('div', { className: 'container' },
- *     $('h1', { attrs: { id: 'title' } }, 'Hello'),
- *     $('button', { on: { click: handler } }, 'Click me')
- *   )
- *
- * Or with children array:
- *   $('div', { className: 'container' }, [
- *     $('span', {}, 'Item 1'),
- *     $('span', {}, 'Item 2')
- *   ])
- */
-export function $(type, propsOrChildren, ...restChildren) {
-    // Handle different call signatures
-    let props = {};
-    let children = [];
-    if (typeof propsOrChildren === 'object' && propsOrChildren !== null && !Array.isArray(propsOrChildren)) {
-        props = propsOrChildren;
-        children = restChildren;
-    }
-    else if (Array.isArray(propsOrChildren)) {
-        children = propsOrChildren;
-        props = {};
-    }
-    else {
-        props = {};
-        children = [propsOrChildren, ...restChildren].filter(Boolean);
-    }
-    // Filter out null/undefined children
-    const filteredChildren = children.filter(c => c != null);
-    return h(type, props, ...filteredChildren);
-}
-/**
- * Create a reusable component
- *
- * Components are pure functions that take state and produce virtual DOM.
- * They re-render when state changes via setState().
- */
-export class Component {
-    constructor(options) {
-        this.element = null;
-        this.container = null;
-        this._state = { ...(options.state || {}) };
-        this._props = { ...(options.props || {}) };
-        this.renderFn = options.render;
-        this.onMountFn = options.onMount;
-        this.onUpdateFn = options.onUpdate;
-        this.onUnmountFn = options.onUnmount;
-    }
-    /**
-     * Attach component to a DOM element
-     */
-    mount(container) {
-        this.container = container;
-        this.element = this._mount();
-        if (this.onMountFn && this.element !== null) {
-            const el = this.element;
-            this.onMountFn(el, this._props);
-        }
-        return this.element;
-    }
-    /**
-     * Update the component with new state
-     */
-    setState(newState, callback) {
-        const prevState = { ...this._state };
-        this._state = { ...this._state, ...newState };
-        if (this.element && this.container) {
-            this._update();
-            if (this.onUpdateFn) {
-                this.onUpdateFn(prevState, this._state, this._props);
-            }
-        }
-        if (callback)
-            callback();
-    }
-    /**
-     * Update props
-     */
-    setProps(newProps) {
-        const prevProps = { ...this._props };
-        this._props = { ...this._props, ...newProps };
-        if (this.element && this.container) {
-            this._update();
-        }
-    }
-    /**
-     * Get current state
-     */
-    getState() {
-        return { ...this._state };
-    }
-    /**
-     * Get current props
-     */
-    getProps() {
-        return { ...this._props };
-    }
-    /**
-     * Attach a store for reactive state updates
-     */
-    attachStore(store) {
-        this.store = store;
-        store.subscribe((state) => {
-            if (this.element && this.container) {
-                this.setState(state);
-            }
+        Object.entries(props.style).forEach(([key, val]) => {
+            el.style[key] = val;
         });
     }
-    _mount() {
-        const vdom = this.renderFn(this._state, this._props);
-        const el = document.createElement('div');
-        this.container?.appendChild(el);
-        const node = createDOM(vdom, el);
-        el.appendChild(node.element);
-        return el;
+    if (props.on) {
+        Object.entries(props.on).forEach(([eventName, handler]) => {
+            el.addEventListener(eventName, handler);
+        });
     }
-    _update() {
-        if (!this.container || !this.element)
-            return;
-        const vdom = this.renderFn(this._state, this._props);
-        this.element.innerHTML = '';
-        const node = createDOM(vdom, this.element);
-        this.element.appendChild(node.element);
-    }
-    /**
-     * Cleanup component
-     */
-    destroy() {
-        if (this.element && this.element.parentNode) {
-            this.element.parentNode.removeChild(this.element);
+    Object.entries(props).forEach(([key, val]) => {
+        if (key.startsWith('data-') && val != null)
+            el.setAttribute(key, String(val));
+    });
+    const skip = ['className', 'id', 'style', 'on', 'children', 'key', ...Object.keys(props).filter(k => k.startsWith('data-'))];
+    Object.entries(props).forEach(([key, val]) => {
+        if (!skip.includes(key) && val != null) {
+            if (key === 'value' && el.value !== undefined)
+                el.value = String(val);
+            else if (key !== 'children' && key !== 'key')
+                el.setAttribute(key, String(val));
         }
-        if (this.onUnmountFn) {
-            this.onUnmountFn();
-        }
-        this.element = null;
-        this.container = null;
-    }
+    });
+    children.forEach((child) => {
+        if (child != null)
+            el.appendChild(createDOM(child));
+    });
+    return el;
 }
-/**
- * Functional component shorthand
- */
-export function component(renderFn, initialState, initialProps) {
-    return new Component({ render: renderFn, state: initialState, props: initialProps });
+export function createApp(config) {
+    const rootEl = typeof config.root === 'string'
+        ? document.querySelector(config.root)
+        : config.root;
+    if (!rootEl) {
+        console.error('Nexus: Root element not found:', config.root);
+        return;
+    }
+    const listeners = new Set();
+    const store = {
+        state: { ...config.state },
+        setState: (newState) => {
+            store.state = { ...store.state, ...newState };
+            listeners.forEach(fn => fn(store.state));
+        },
+        subscribe: (fn) => {
+            listeners.add(fn);
+            return () => listeners.delete(fn);
+        },
+        get: (key) => store.state[key],
+    };
+    function render(state) {
+        rootEl.innerHTML = '';
+        const node = createDOM(config.render(state));
+        if (node)
+            rootEl.appendChild(node);
+    }
+    store.subscribe(render);
+    render(store.state);
+    return store;
+}
+// ============================================================================
+// COMPONENT
+// ============================================================================
+export class Component {
+    constructor(config) {
+        this.el = null;
+        this._state = config.state || {};
+        this.renderFn = config.render;
+        this.onMountFn = config.onMount;
+    }
+    mount(container) {
+        this.el = container;
+        container.innerHTML = '';
+        const node = createDOM(this.renderFn(this._state));
+        if (node)
+            container.appendChild(node);
+        if (this.onMountFn && this.el)
+            this.onMountFn(this.el);
+        return container;
+    }
+    setState(newState) {
+        this._state = { ...this._state, ...newState };
+        if (this.el)
+            this.mount(this.el);
+    }
+    getState() { return { ...this._state }; }
 }
 export class Store {
     constructor(initialState = {}) {
@@ -298,394 +263,216 @@ export class Store {
         this.listeners = new Map();
         this.state = { ...initialState };
     }
-    /**
-     * Get current state
-     */
-    getState() {
-        return { ...this.state };
-    }
-    /**
-     * Get specific state value
-     */
-    get(key) {
-        return this.state[key];
-    }
-    /**
-     * Update state (shallow merge)
-     */
+    getState() { return { ...this.state }; }
+    get(key) { return this.state[key]; }
     setState(newState) {
-        const prevState = { ...this.state };
+        const prev = { ...this.state };
         this.state = { ...this.state, ...newState };
-        this._notify(prevState, newState);
+        this._notify(prev, newState);
     }
-    /**
-     * Set specific state value
-     */
     set(key, value) {
-        const prevState = { ...this.state };
+        const prev = { ...this.state };
         this.state[key] = value;
-        this._notify(prevState, { [key]: value });
+        this._notify(prev, { [key]: value });
     }
-    /**
-     * Subscribe to all state changes
-     */
-    subscribe(subscriber) {
-        this.subscribers.add(subscriber);
-        return () => this.subscribers.delete(subscriber);
+    subscribe(fn) {
+        this.subscribers.add(fn);
+        return () => this.subscribers.delete(fn);
     }
-    /**
-     * Subscribe to specific state key changes
-     */
-    on(key, subscriber) {
-        if (!this.listeners.has(key)) {
+    on(key, fn) {
+        if (!this.listeners.has(key))
             this.listeners.set(key, new Set());
-        }
-        this.listeners.get(key).add(subscriber);
-        return () => this.listeners.get(key)?.delete(subscriber);
+        this.listeners.get(key).add(fn);
+        return () => this.listeners.get(key)?.delete(fn);
     }
-    /**
-     * Compute derived state
-     */
-    derive(fn) {
-        return fn(this.state);
-    }
-    _notify(prevState, changed) {
-        // Notify global subscribers
-        for (const sub of this.subscribers) {
-            sub(this.state);
-        }
-        // Notify key-specific subscribers
-        for (const key of Object.keys(changed)) {
-            const subs = this.listeners.get(key);
-            if (subs) {
-                for (const sub of subs) {
-                    sub(this.state);
-                }
-            }
-        }
+    derive(fn) { return fn(this.state); }
+    _notify(prev, changed) {
+        this.subscribers.forEach(fn => fn(this.state));
+        Object.keys(changed).forEach(key => this.listeners.get(key)?.forEach(fn => fn(this.state)));
     }
 }
-/**
- * Create a new store instance
- */
-export function createStore(initialState) {
-    return new Store(initialState);
-}
+export function createStore(initialState) { return new Store(initialState); }
 export class Router {
     constructor() {
         this.routes = [];
-        this.currentPath = '/';
-        this.rootElement = null;
     }
-    /**
-     * Initialize router with a root element
-     */
-    init(rootElement) {
-        this.rootElement = rootElement;
-        window.addEventListener('hashchange', () => this._handleRoute());
-        this._handleRoute();
+    init() {
+        window.addEventListener('hashchange', () => this._handle());
+        this._handle();
     }
-    /**
-     * Register a route
-     */
-    route(path, handler) {
-        this.routes.push({ path, handler });
-        return this;
-    }
-    /**
-     * Set before-each filter
-     */
-    beforeEach(filter) {
-        this.beforeEachHandler = filter;
-        return this;
-    }
-    /**
-     * Handle 404
-     */
-    notFound(handler) {
-        this.notFoundHandler = handler;
-        return this;
-    }
-    /**
-     * Navigate programmatically
-     */
-    navigate(path) {
-        if (path.startsWith('#')) {
-            window.location.hash = path;
-        }
-        else if (path.startsWith('/')) {
-            window.location.hash = '#' + path;
-        }
-        else {
-            window.location.hash = '#/' + path;
-        }
-    }
-    /**
-     * Get current path
-     */
-    getPath() {
-        return window.location.hash.replace('#', '') || '/';
-    }
-    _handleRoute() {
+    route(path, handler) { this.routes.push({ path, handler }); return this; }
+    beforeEach(fn) { this.beforeEachHandler = fn; return this; }
+    notFound(fn) { this.notFoundHandler = fn; return this; }
+    navigate(path) { window.location.hash = path.startsWith('#') ? path : '#/' + path; }
+    getPath() { return (window.location.hash || '#/').replace('#', '') || '/'; }
+    _handle() {
         const path = this.getPath();
-        // Apply before-each filter
-        if (this.beforeEachHandler && !this.beforeEachHandler(path)) {
+        if (this.beforeEachHandler && !this.beforeEachHandler(path))
             return;
-        }
-        // Find matching route
         for (const route of this.routes) {
-            const params = this._matchRoute(route.path, path);
-            if (params !== null) {
+            const params = this._match(route.path, path);
+            if (params) {
                 route.handler(params);
                 return;
             }
         }
-        // 404
-        if (this.notFoundHandler) {
-            this.notFoundHandler({});
-        }
+        this.notFoundHandler?.({});
     }
-    _matchRoute(pattern, path) {
-        const patternParts = pattern.split('/').filter(Boolean);
-        const pathParts = path.split('/').filter(Boolean);
-        if (patternParts.length !== pathParts.length) {
+    _match(pattern, path) {
+        const pp = pattern.split('/').filter(Boolean);
+        const pc = path.split('/').filter(Boolean);
+        if (pp.length !== pc.length)
             return null;
-        }
         const params = {};
-        for (let i = 0; i < patternParts.length; i++) {
-            const patternPart = patternParts[i];
-            const pathPart = pathParts[i];
-            if (patternPart.startsWith(':')) {
-                // Parameter
-                params[patternPart.slice(1)] = pathPart;
-            }
-            else if (patternPart === '*') {
-                // Wildcard
-                params['wildcard'] = pathParts.slice(i).join('/');
-            }
-            else if (patternPart !== pathPart) {
+        for (let i = 0; i < pp.length; i++) {
+            if (pp[i].startsWith(':'))
+                params[pp[i].slice(1)] = pc[i];
+            else if (pp[i] !== pc[i])
                 return null;
-            }
         }
         return params;
     }
 }
-/**
- * Create a router instance
- */
-export function createRouter() {
-    return new Router();
-}
+export function createRouter() { return new Router(); }
 export class HttpClient {
     constructor(baseURL = '') {
         this.baseURL = '';
         this.baseURL = baseURL;
     }
-    /**
-     * Set base URL for all requests
-     */
-    setBaseURL(url) {
-        this.baseURL = url;
-        return this;
-    }
-    /**
-     * Make HTTP request
-     */
+    setBaseURL(url) { this.baseURL = url; return this; }
     async request(endpoint, options = {}) {
-        const url = this.baseURL ? `${this.baseURL}${endpoint}` : endpoint;
-        const headers = {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        };
+        const url = this.baseURL ? this.baseURL + endpoint : endpoint;
         const config = {
             method: options.method || 'GET',
-            headers,
-            credentials: options.credentials || 'same-origin',
+            headers: { 'Content-Type': 'application/json', ...options.headers },
         };
-        if (options.body && config.method !== 'GET') {
+        if (options.body && config.method !== 'GET')
             config.body = JSON.stringify(options.body);
-        }
-        if (options.signal) {
-            config.signal = options.signal;
-        }
-        const response = await fetch(url, config);
-        const data = await response.json().catch(() => null);
-        const responseHeaders = {};
-        response.headers.forEach((value, key) => {
-            responseHeaders[key] = value;
-        });
-        return {
-            data: data,
-            status: response.status,
-            statusText: response.statusText,
-            headers: responseHeaders,
-        };
+        const res = await fetch(url, config);
+        const data = await res.json().catch(() => null);
+        return { data: data, status: res.status };
     }
-    /**
-     * GET request
-     */
-    get(endpoint, options) {
-        return this.request(endpoint, { ...options, method: 'GET' });
-    }
-    /**
-     * POST request
-     */
-    post(endpoint, data, options) {
-        return this.request(endpoint, { ...options, method: 'POST', body: data });
-    }
-    /**
-     * PUT request
-     */
-    put(endpoint, data, options) {
-        return this.request(endpoint, { ...options, method: 'PUT', body: data });
-    }
-    /**
-     * DELETE request
-     */
-    delete(endpoint, options) {
-        return this.request(endpoint, { ...options, method: 'DELETE' });
-    }
-    /**
-     * PATCH request
-     */
-    patch(endpoint, data, options) {
-        return this.request(endpoint, { ...options, method: 'PATCH', body: data });
-    }
+    get(endpoint) { return this.request(endpoint, { method: 'GET' }); }
+    post(endpoint, data) { return this.request(endpoint, { method: 'POST', body: data }); }
+    put(endpoint, data) { return this.request(endpoint, { method: 'PUT', body: data }); }
+    delete(endpoint) { return this.request(endpoint, { method: 'DELETE' }); }
+    patch(endpoint, data) { return this.request(endpoint, { method: 'PATCH', body: data }); }
 }
-/**
- * Create HTTP client instance
- */
-export function createHttp(baseURL) {
-    return new HttpClient(baseURL);
-}
-// Alias for HTTP module
-export const http = new HttpClient();
+export function createHttp(baseURL) { return new HttpClient(baseURL); }
 // ============================================================================
-// LAZY RENDERING (PERFORMANCE FEATURE)
+// LAZY
 // ============================================================================
-/**
- * LazyContainer - Renders children only when they enter the viewport
- * Uses IntersectionObserver for efficient lazy loading
- */
 export class LazyContainer {
     constructor(container) {
         this.children = [];
-        this.renderedChildren = new Map();
         this.observer = null;
-        this.pendingIndices = new Set();
+        this.pending = new Set();
         this.container = container;
-        this._setupObserver();
-    }
-    /**
-     * Set children to be lazily rendered
-     */
-    setChildren(children) {
-        this.children = children;
-        this._observeChildren();
-    }
-    /**
-     * Add a single lazily rendered child
-     */
-    appendChild(child) {
-        this.children.push(child);
-        const index = this.children.length - 1;
-        this._observeChild(index);
-    }
-    /**
-     * Clear all children
-     */
-    clear() {
-        this.children = [];
-        this.renderedChildren.forEach((el) => el.remove());
-        this.renderedChildren.clear();
-        this.pendingIndices.clear();
-    }
-    _setupObserver() {
-        if (typeof IntersectionObserver === 'undefined')
-            return;
         this.observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    const index = entry.target.dataset.index;
-                    if (index !== undefined) {
-                        this._renderChild(parseInt(index, 10));
-                    }
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    const idx = e.target.dataset.index;
+                    if (idx !== undefined)
+                        this._render(parseInt(idx));
                 }
             });
         }, { rootMargin: '100px', threshold: 0.1 });
     }
-    _observeChildren() {
-        this.children.forEach((_, index) => {
-            this._observeChild(index);
+    setChildren(children) {
+        this.children = children;
+        this.container.innerHTML = '';
+        this.pending.clear();
+        children.forEach((_, i) => {
+            const ph = document.createElement('div');
+            ph.dataset.index = String(i);
+            ph.style.minHeight = '50px';
+            this.container.appendChild(ph);
+            this.observer?.observe(ph);
+            this.pending.add(i);
         });
     }
-    _observeChild(index) {
-        // Create placeholder element
-        const placeholder = document.createElement('div');
-        placeholder.dataset.index = String(index);
-        placeholder.style.minHeight = '50px';
-        placeholder.className = 'lazy-placeholder';
-        this.container.appendChild(placeholder);
-        if (this.observer) {
-            this.observer.observe(placeholder);
-        }
-        this.pendingIndices.add(index);
-    }
-    _renderChild(index) {
-        if (!this.pendingIndices.has(index))
+    _render(index) {
+        if (!this.pending.has(index))
             return;
-        const placeholder = this.container.querySelector(`[data-index="${index}"]`);
-        if (!placeholder)
+        const ph = this.container.querySelector(`[data-index="${index}"]`);
+        if (!ph)
             return;
-        const child = this.children[index];
-        if (!child)
-            return;
-        const node = createDOM(child, this.container);
-        placeholder.replaceWith(node.element);
-        this.renderedChildren.set(index, node.element);
-        this.pendingIndices.delete(index);
-        if (this.observer) {
-            this.observer.unobserve(placeholder);
-        }
+        const node = createDOM(this.children[index]);
+        ph.replaceWith(node);
+        this.observer?.unobserve(ph);
+        this.pending.delete(index);
     }
-    /**
-     * Force render all children (bypass lazy)
-     */
-    renderAll() {
-        this.pendingIndices.forEach((index) => {
-            this._renderChild(index);
-        });
-    }
-    /**
-     * Cleanup
-     */
-    destroy() {
-        if (this.observer) {
-            this.observer.disconnect();
-        }
-        this.clear();
-    }
+    renderAll() { this.pending.forEach(i => this._render(i)); }
+    destroy() { this.observer?.disconnect(); }
 }
-/**
- * Create lazy container
- */
-export function createLazyContainer(element) {
-    return new LazyContainer(element);
+export function createLazyContainer(el) { return new LazyContainer(el); }
+// ============================================================================
+// PATTERNS
+// ============================================================================
+export function card(title, body, actions) {
+    return div([
+        h2(title),
+        typeof body === 'string' ? p(body) : body,
+        actions ? div(actions.map(a => button(a.label, on('click', a.onClick))), cls('card-actions')) : null,
+    ], cls('card'));
+}
+export function modal(title, content, onClose) {
+    return div([
+        div([h2(title), ...(Array.isArray(content) ? content : [content])], cls('modal-content')),
+    ], {
+        className: 'modal-overlay',
+        on: onClose ? { click: (e) => { if (e.target.classList.contains('modal-overlay'))
+                onClose(); } } : undefined,
+    });
+}
+export function navbar(brand, links) {
+    return header([
+        div([
+            a(brand, { href: '/' }),
+            nav(links.map(l => a(l.label, { href: l.href, className: 'nav-link' })), { className: 'nav-menu' }),
+        ], cls('nav-inner')),
+    ], cls('navbar'));
+}
+export function alert(message, type = 'info') {
+    const colors = {
+        success: { bg: '#d4edda', text: '#155724' },
+        error: { bg: '#f8d7da', text: '#721c24' },
+        warning: { bg: '#fff3cd', text: '#856404' },
+        info: { bg: '#d1ecf1', text: '#0c5464' },
+    };
+    const c = colors[type];
+    return div(message, css({ padding: '12px 16px', borderRadius: '8px', backgroundColor: c.bg, color: c.text }));
+}
+export function spinner(size = 24) {
+    return div('', css({ width: size + 'px', height: size + 'px', border: '3px solid #f3f3f3', borderTop: '3px solid #3498db', borderRadius: '50%', animation: 'spin 1s linear infinite' }));
 }
 // ============================================================================
-// EXPORTS
+// DEFAULT EXPORT
 // ============================================================================
 export default {
-    h,
-    $,
-    Component,
-    component,
-    Store,
-    createStore,
-    Router: createRouter(),
-    http,
-    createHttp,
-    LazyContainer,
-    createLazyContainer,
+    // Elements
+    div, span, p, h1, h2, h3, h4, h5, h6, a, strong, em, small, blockquote, code, pre,
+    button, input, textarea, select, option,
+    ul, ol, li,
+    img, video, audio,
+    nav, header, footer, main, section, article, aside,
+    form, label, fieldset, legend,
+    br, hr, spacer,
+    // Attributes
+    cls, css, id, data, on, onMulti, href, ph, type, name, val, disabled, required, autofocus, readonly, checked,
+    // Layout
+    row, column, center, grid, flex, full,
+    // Core
+    h, createDOM,
+    // App & State
+    createApp, createStore, Store, Component,
+    // Router
+    createRouter, Router,
+    // HTTP
+    createHttp, HttpClient,
+    // Lazy
+    createLazyContainer, LazyContainer,
+    // Patterns
+    card, modal, navbar, alert, spinner,
 };
 //# sourceMappingURL=nexus.js.map

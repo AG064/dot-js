@@ -4,7 +4,7 @@ import path from 'path';
 export default defineConfig({
   resolve: {
     alias: {
-      '../framework/src/nexus': path.resolve(__dirname, '../framework/src/nexus.ts'),
+      '../framework/src/nexus': path.resolve(__dirname, '../framework/dist/nexus.js'),
     },
   },
   server: {
