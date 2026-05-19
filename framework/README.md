@@ -286,6 +286,62 @@ Nexus.js is built in layers:
 | No external frameworks | ✅ |
 | Clear documentation | ✅ |
 
+## Testing
+
+```bash
+# Install dependencies
+cd framework
+npm install
+
+# Run tests (single run)
+npm run test:run
+
+# Run tests in watch mode
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+**60 tests covering:**
+- `createDOM` — text nodes, elements, attributes, event handlers, styles, children
+- Elements — `div`, `h1-h6`, `button`, `input`, `ul`, `ol`, `li`, `img`, `form`, `label`, `select`, `option`
+- Attribute helpers — `cls`, `css`, `id`, `data`, `on`, `onMulti`, `href`, `ph`, `type`, `name`, `val`, `disabled`, `required`, `autofocus`, `readonly`, `checked`
+- Layout helpers — `row`, `column`, `center`, `grid`, `flex`, `full`
+- Store — `createStore`, `getState`, `setState`, `subscribe`, `unsubscribe`
+- createApp — initial render, re-render on state change, HTMLElement root
+
 ## License
 
 MIT
+
+---
+
+## Quick Start
+
+```bash
+cd framework
+npm install
+npm run build
+```
+
+Then in your HTML:
+
+```html
+<div id="app"></div>
+<script type="module">
+  import { createApp, div, h1, button, on } from './dist/nexus.js';
+
+  createApp({
+    root: '#app',
+    state: { count: 0 },
+    render: (s) => div([
+      h1(`Count: ${s.count}`),
+      button('Click me', on('click', () => s.count++)),
+    ]),
+  });
+</script>
+```
