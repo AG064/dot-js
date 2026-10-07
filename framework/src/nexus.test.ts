@@ -95,7 +95,7 @@ describe('createDOM', () => {
 
   it('sets inline styles', () => {
     const node = createDOM(h('div', { style: { color: 'red', fontSize: '14px' } }));
-    const style = (node as Element).style;
+    const style = (node as HTMLElement).style;
     expect(style.color).toBe('red');
     expect(style.fontSize).toBe('14px');
   });
@@ -405,7 +405,7 @@ describe('createApp', () => {
       state: store,
       render: (s) => div([h1(`Count: ${s.count}`)]),
     });
-    expect(document.getElementById('app').innerHTML).toContain('Count: 0');
+    expect(document.getElementById('app')!.innerHTML).toContain('Count: 0');
   });
 
   it('re-renders on state change', () => {
@@ -417,12 +417,12 @@ describe('createApp', () => {
     });
     
     store.setState({ count: 5 });
-    expect(document.getElementById('app').innerHTML).toContain('Count: 5');
+    expect(document.getElementById('app')!.innerHTML).toContain('Count: 5');
   });
 
   it('accepts HTMLElement as root', () => {
     const store = createStore({ msg: 'hello' });
-    const rootEl = document.getElementById('app');
+    const rootEl = document.getElementById('app')!;
     createApp({
       root: rootEl,
       state: store,
@@ -439,17 +439,6 @@ describe('createApp', () => {
       state: plainState,
       render: (s) => div([h1(`${s.count}`)]),
     });
-    expect(document.getElementById('app').innerHTML).toContain('0');
+    expect(document.getElementById('app')!.innerHTML).toContain('0');
   });
 });
-
-// ============================================================================
-// RUN TESTS
-// ============================================================================
-
-const runner = async () => {
-  const { run } = await import('vitest');
-  await run();
-};
-
-export { runner };

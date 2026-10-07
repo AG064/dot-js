@@ -2,6 +2,10 @@
 
 A lightweight frontend framework built from scratch in TypeScript, without using any existing frontend frameworks or libraries.
 
+Related projects: [NexusLite](https://github.com/AG064/nexuslite) and its
+[earlier implementation](https://github.com/AG064/nexuslite-js). This repository
+contains Nexus.js, with its own API and build output. The packages are separate.
+
 ## Project Structure
 
 ```
