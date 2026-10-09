@@ -2,6 +2,10 @@
 
 A lightweight frontend framework built from scratch in TypeScript, without using any existing frontend frameworks or libraries.
 
+Related projects: [NexusLite](https://github.com/AG064/nexuslite) and its
+[earlier implementation](https://github.com/AG064/nexuslite-js). This repository
+contains Nexus.js, with its own API and build output. The packages are separate.
+
 ## Project Structure
 
 ```
@@ -146,3 +150,6 @@ Attaching event listeners to every individual element is O(n) memory. Event dele
 ### Why not `addEventListener`?
 
 In React, you don't call `addEventListener` after rendering — you pass an `onClick` prop when creating the element. Nexus.js does the same thing: events are attached during the render phase via the `on` property, not as a separate imperative step.
+## Contributor tools
+
+Use Node.js 22.18 or later for the Vitest 4 tests and Vite 7 example builds. These are development dependencies; the library runtime has no new Node.js engine restriction. Install dependencies from the committed lockfiles with npm ci.
